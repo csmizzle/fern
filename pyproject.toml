@@ -9,8 +9,6 @@ python = "^3.8"
 Flask = "^2.0.2"
 Flask-Cors = "^3.0.10"
 Flask-JWT = "asdf"
-"pdfminer.six" = "^20211012"
-python-docx = "^0.8.11"
 spacy = "^3.2.0"
 nltk = "^3.6.5"
 Flask-PyMongo = "^2.3.0"
@@ -20,6 +18,8 @@ Flask-GraphQL = "^2.0.1"
 python-magic = "^0.4.24"
 mongomock = "^3.23.0"
 bs4 = "^0.0.1"
+vcrpy = "^4.1.1"
+lxml = "^4.7.1"
 
 [tool.poetry.dev-dependencies]
 

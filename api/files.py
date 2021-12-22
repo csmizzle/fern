@@ -1,16 +1,13 @@
 """
 Document parsers
 """
-
-from typing import Optional, Union
-from pdfminer.high_level import extract_text
+from api.tika import tika_parse_body
+from typing import Optional
+from math import ceil
 import re
-from nltk.corpus import stopwords
 import os
 import spacy
-from docx import Document
 from bs4 import BeautifulSoup
-import magic
 
 # try to use spacy model, if not, download needed spacy model
 try:
@@ -21,138 +18,98 @@ except OSError:
     nlp = spacy.load('en_core_web_lg')
 
 
-# document extractors
-class SpacyDoc:
-    """
-    Class for string cleaning that can inherited to all document type specific
-    """
-    def __init__(self):
-        self.text = None
+# Spacy Document Pipeline
+class DocPipe:
+
+    def __init__(
+            self,
+            text: str,
+            default_length: int = 1000000,
+            disable_tags: list = None,
+            pipeline: list = None,
+    ) -> None:
+        if disable_tags is None:
+            disable_tags = [
+                "tok2vec", "tagger", "parser", "attribute_ruler", "lemmatizer"
+            ]
+        self.text = text
+        self.default_length = default_length
+        self.pipeline = pipeline
+        self.disable_tags = disable_tags
         self.nlp = nlp
         self.entity_dict = dict()
 
-    def clean(self) -> Optional[str]:
+    def chunk_texts(self) -> list:
         """
-        cleaning pipeline for text
-        :return: str
-            cleaned text
+        Chunk based on default_length
+        :return:
         """
+        if len(self.text) > self.default_length:
+            chunks = ceil(len(self.text) / self.default_length)
+            chunk_size = ceil(len(self.text)/chunks)
+            texts = [
+                self.text[i:i+chunk_size] for i in range(0, len(self.text), chunk_size)
+            ]
+        else:
+            texts = [self.text]
+        return texts
 
-        if len(self.text) > 0:
-            return re.sub(r'\n', ' ', self.text)
-
+    @staticmethod
+    def clean(texts) -> Optional[list]:
+        """
+        Clean texts
+        """
+        if len(texts) > 0:
+            for idx, text in enumerate(texts):
+                texts[idx] = re.sub(r'\n', ' ', text)
         return None
 
-    def collect_tokens(self, length_threshold: int = 2) -> list:
+    def load_entities(self) -> None:
         """
-        output tokens for document
-        :param length_threshold: int
-            length of string to ignore in token output
+        Collect entity stream from spacy pipeline
         :return: list
         """
+        texts = self.chunk_texts()
+        for text in self.nlp.pipe(texts, disable=self.disable_tags):
+            for ent in text.doc.ents:
+                if ent.label_ not in self.entity_dict.keys():
+                    self.entity_dict[ent.label_] = set(ent.text)
+                else:
+                    self.entity_dict[ent.label_].add(ent.text)
+        for _ in self.entity_dict.keys():
+            self.entity_dict[_] = list(self.entity_dict[_])
 
-        return sorted(list(set([str(token.text).lower().strip()
-                                for token in self.document.doc
-                                if len(token.text.strip()) > length_threshold
-                                if str(token.text).lower().strip() not in set(stopwords.words('english'))
-                                ])))
 
-
-class PDF(SpacyDoc):
-    """
-    Take text from PDF into a Spacy doc for future NLP work
-    """
-
+class TikaPipe(DocPipe):
     def __init__(self, path: str) -> None:
-        super().__init__()
-        self.text = extract_text(path)
-        self.clean_text = self.clean()
-        self.document = self.nlp(self.clean_text)
-
-    def load_entities(self) -> None:
-        """
-        Load entities from a document
-        """
-
-        for entity in self.document.ents:
-            if entity.label_ not in self.entity_dict.keys():
-                self.entity_dict[entity.label_] = [entity.text]
-            else:
-                self.entity_dict[entity.label_].append(entity.text)
+        self.text = tika_parse_body(file_path=path)
+        super().__init__(text=self.text)
 
 
-class Docx(SpacyDoc):
-    """
-    Take text from Docx into a SpacyDoc for future NLP work
-    """
-
-    def __init__(self, path: str) -> None:
-        super().__init__()
-        self.docx = Document(path)
-        self.text = self.extract_text()
-        self.clean_text = self.clean()
-        self.document = nlp(self.clean_text)
-
-    def extract_text(self) -> str:
-        text = ''
-        for paragraph in self.docx.paragraphs:
-            text += paragraph.text + " "  # add a space for separation
-
-        return text
-
-    def load_entities(self) -> None:
-        """
-        Load entities from a document
-        """
-
-        for entity in self.document.ents:
-            if entity.label_ not in self.entity_dict.keys():
-                self.entity_dict[entity.label_] = [entity.text]
-            else:
-                self.entity_dict[entity.label_].append(entity.text)
-
-
-class HTML(SpacyDoc):
+# HTML Handlers
+class HTMLPipe(DocPipe):
     """
     FERN HTML upload
 
     """
 
     def __init__(self, html: str) -> None:
-        super().__init__()
-        self.text = html
-        self.clean_text = BeautifulSoup(self.text).get_text().strip()
-        self.document = nlp(self.clean_text)
-
-    def load_entities(self) -> None:
-        """
-        Load entities from a document
-        """
-
-        for entity in self.document.ents:
-            if entity.label_ not in self.entity_dict.keys():
-                self.entity_dict[entity.label_] = [entity.text]
-            else:
-                self.entity_dict[entity.label_].append(entity.text)
+        self.text = BeautifulSoup(html).get_text().strip()
+        super().__init__(text=self.text)
 
 
-def create_fern_doc(path: str) -> Optional[Union[PDF, Docx]]:
+def create_fern_doc(path: str) -> Optional[TikaPipe]:
     """
     analyze file factory function
 
     :param path: str
     :return: Optional[PDF, Docx]
     """
-
-    file_type = magic.from_file(path)
-    if file_type:
-        if 'PDF document' in file_type:
-            return PDF(path)
-        if 'Microsoft Word' in file_type:
-            return Docx(path)
+    if path:
+        return TikaPipe(path)
 
 
-def create_fern_html(html: str) -> Optional[HTML]:
+def create_fern_html(html: str) -> Optional[HTMLPipe]:
     """
     Factory for HTML docs
 
@@ -160,4 +117,4 @@ def create_fern_html(html: str) -> Optional[HTML]:
     :return: Optional[HTML]
     """
     if len(html) > 0:
-        return HTML(html)
+        return HTMLPipe(html)

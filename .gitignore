@@ -1,3 +1,5 @@
 .idea
-/scratch
+scratch
 *cache*
+datasets
+notebooks
