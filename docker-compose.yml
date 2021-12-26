@@ -1,13 +1,5 @@
 version: '3.8'
 services:
-  tika:
-    image: apache/tika:2.2.0
-    expose:
-      - 9998
-    volumes:
-      - "./services/tika/tika-config.xml:/tika-config.xml"
-    command: -c /tika-config.xml
-    restart: always
   nginx:
     image: nginx:1.19-alpine
     ports:
@@ -15,4 +7,20 @@ services:
     volumes:
       - "./services/nginx/nginx.conf:/etc/nginx/conf.d/default.conf"
     depends_on:
+      - flask
+  flask:
+    image: fern-flask-api:0.1
+    expose:
+      - "5000"
+    volumes:
+      - "./uploads:/app/uploads"
+    depends_on:
       - tika
+  tika:
+    image: apache/tika:2.2.0
+    expose:
+      - "9998"
+    volumes:
+      - "./services/tika/tika-config.xml:/tika-config.xml"
+    command: "-c /tika-config.xml"
+    restart: always

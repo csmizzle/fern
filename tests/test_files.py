@@ -3,7 +3,7 @@ Test files
 
 """
 
-from api.files import DocPipe, PDFPipe
+from api.app.files import DocPipe, PDFPipe
 
 
 def test_text_chunking() -> None:

@@ -2,8 +2,8 @@
 Load my resume into MongoDB
 
 """
-from api.files import create_fern_doc
-from api.models import FernDoc, FernDocName, FernDocText, FernEntities
+from files import create_fern_doc
+from models import FernDoc, FernDocName, FernDocText, FernEntities
 from mongoengine import connect
 
 database = 'fern-flask-testing'

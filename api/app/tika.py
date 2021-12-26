@@ -16,8 +16,8 @@ class TikaRequest:
     Supported file types: https://www.tutorialspoint.com/tika/tika_file_formats.htm
     """
 
-    TIKA_HOST = 'http://localhost'
-    TIKA_PORT = '1337'
+    TIKA_HOST = 'http://tika'
+    TIKA_PORT = '9998'
     TIKA_SERVER = f"{TIKA_HOST}:{TIKA_PORT}"
 
     def __init__(self, file_path: str) -> None:

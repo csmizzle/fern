@@ -1,7 +1,7 @@
 """
 Document parsers
 """
-from api.tika import tika_parse_body
+from tika import tika_parse_body
 from typing import Optional
 from math import ceil
 import re

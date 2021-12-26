@@ -2,7 +2,7 @@
 MongoDB models
 
 """
-
+from pydantic import BaseModel
 from mongoengine import Document
 from mongoengine.fields import (
     DictField,
@@ -32,3 +32,8 @@ class FernDoc(Document):
     name = ReferenceField(FernDocName)
     text = ReferenceField(FernDocText)
     entities = ReferenceField(FernEntities)
+
+
+# Flask Models
+class DocResponse(BaseModel):
+    message: str

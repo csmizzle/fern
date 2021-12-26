@@ -3,7 +3,7 @@ Test Tika Server requests
 
 """
 
-from api.tika import TikaRequest, tika_parse_body
+from api import TikaRequest, tika_parse_body
 
 
 # TODO: add cassettes for HTTP calls
