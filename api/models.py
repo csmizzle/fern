@@ -11,6 +11,7 @@ from mongoengine.fields import (
 )
 
 
+# mongo models
 class FernDocName(Document):
     meta = {'collection': 'doc_name'}
     name = StringField()
@@ -31,4 +32,3 @@ class FernDoc(Document):
     name = ReferenceField(FernDocName)
     text = ReferenceField(FernDocText)
     entities = ReferenceField(FernEntities)
-

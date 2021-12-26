@@ -16,10 +16,10 @@ mongoengine = "^0.23.1"
 graphene-mongo = "^0.2.13"
 Flask-GraphQL = "^2.0.1"
 python-magic = "^0.4.24"
-mongomock = "^3.23.0"
 bs4 = "^0.0.1"
 vcrpy = "^4.1.1"
 lxml = "^4.7.1"
+fastapi = "^0.70.1"
 
 [tool.poetry.dev-dependencies]
 

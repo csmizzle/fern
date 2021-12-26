@@ -1,0 +1,25 @@
+{
+  "name": "Fern",
+  "description": "Fern documents from the web",
+  "version": "0.1",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "./images/fern.png",
+      "32": "./images/fern.png",
+      "48": "./images/fern.png",
+      "128": "./images/fern.png"
+    }
+  },
+  "icons": {
+    "16": "./images/fern.png",
+    "32": "./images/fern.png",
+    "48": "./images/fern.png",
+    "128": "./images/fern.png"
+  },
+  "permissions": ["storage"]
+}

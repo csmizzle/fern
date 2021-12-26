@@ -1,11 +1,18 @@
 version: '3.8'
 services:
-  tika-server:
-    image: apache/tika:latest-full
-    ports:
-      - "9998:9998"
+  tika:
+    image: apache/tika:2.2.0
+    expose:
+      - 9998
     volumes:
-      - "./config/tika-config.xml:/tika-config.xml"
-    command:
-      - -c /tika-config.xml
+      - "./services/tika/tika-config.xml:/tika-config.xml"
+    command: -c /tika-config.xml
     restart: always
+  nginx:
+    image: nginx:1.19-alpine
+    ports:
+      - "1337:80"
+    volumes:
+      - "./services/nginx/nginx.conf:/etc/nginx/conf.d/default.conf"
+    depends_on:
+      - tika

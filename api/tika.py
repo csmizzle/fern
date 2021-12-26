@@ -11,10 +11,14 @@ import traceback
 class TikaRequest:
     """
     Wrapper for Tika server requests
+    Set up config variables in this class for now, add this to a configuration file
+    soon
     Supported file types: https://www.tutorialspoint.com/tika/tika_file_formats.htm
     """
 
-    TIKA_SERVER = 'http://localhost:9998'
+    TIKA_HOST = 'http://localhost'
+    TIKA_PORT = '1337'
+    TIKA_SERVER = f"{TIKA_HOST}:{TIKA_PORT}"
 
     def __init__(self, file_path: str) -> None:
         self.file_path = file_path

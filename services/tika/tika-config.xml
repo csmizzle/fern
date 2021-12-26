@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+  <!-- <parsers etc.../> -->
+  <server>
+    <params>
+      <port>9998</port>
+      <host>0.0.0.0</host>
+<!--      <cors>localhost</cors>-->
+      <endpoints>
+        <endpoint>tika</endpoint>
+      </endpoints>
+    </params>
+  </server>
+</properties>

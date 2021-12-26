@@ -98,6 +98,7 @@ class HTMLPipe(DocPipe):
         super().__init__(text=self.text)
 
 
+# functions for classes above
 def create_fern_doc(path: str) -> Optional[TikaPipe]:
     """
     analyze file factory function
