@@ -13,7 +13,7 @@ services:
     expose:
       - "5000"
     volumes:
-      - "./uploads:/app/uploads"
+      - "./volumes/uploads:/app/uploads"
     depends_on:
       - tika
   tika:
@@ -24,3 +24,11 @@ services:
       - "./services/tika/tika-config.xml:/tika-config.xml"
     command: "-c /tika-config.xml"
     restart: always
+  mongo:
+    image: mongo:latest
+    expose:
+      - "27017"
+    volumes:
+      - "./volumes/mongo/:/data/db"
+    depends_on:
+      - flask

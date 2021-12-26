@@ -16,14 +16,20 @@ class TikaRequest:
     Supported file types: https://www.tutorialspoint.com/tika/tika_file_formats.htm
     """
 
-    TIKA_HOST = 'http://tika'
-    TIKA_PORT = '9998'
-    TIKA_SERVER = f"{TIKA_HOST}:{TIKA_PORT}"
+    tika_host = 'http://tika'
+    tika_port = '9998'
+    tika_server = f"{tika_host}:{tika_port}"
 
-    def __init__(self, file_path: str) -> None:
+    def __init__(self, file_path: str, **kwargs) -> None:
         self.file_path = file_path
         self.session = Session()
         self.request = Request()
+        if 'server' in kwargs:
+            self.tika_server = kwargs['server']
+        if 'host' in kwargs:
+            self.tika_host = kwargs['host']
+        if 'port' in kwargs:
+            self.tika_port = kwargs['port']
 
     def _set_headers(self, content_type: str = 'json') -> dict:
         """
@@ -73,7 +79,7 @@ class TikaRequest:
         """
         self._set_request(content_type)
         self.request.method = method
-        self.request.url = self.TIKA_SERVER+f'/{endpoint}'
+        self.request.url = self.tika_server + f'/{endpoint}'
         prepped = self.request.prepare()
         return self.session.send(prepped)
 

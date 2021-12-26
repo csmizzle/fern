@@ -6,7 +6,7 @@ from files import create_fern_doc
 from models import FernDoc, FernDocName, FernDocText, FernEntities
 from mongoengine import connect
 
-database = 'fern-flask-testing'
+database = 'mongodb://mongo:27017/fern-flask-docker'
 
 
 def doc_from_path(file_path: str) -> None:
@@ -15,7 +15,7 @@ def doc_from_path(file_path: str) -> None:
     :param file_path: str
     :return: None
     """
-    connect(database, alias='default')
+    connect(host=database, alias='default')
     print(f'Ferning {file_path}...')
     doc = create_fern_doc(file_path)
     doc.load_entities()

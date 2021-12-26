@@ -1,9 +1,6 @@
 """
 FERN api endpoints
 TODO:
-    - Mongo Container
-        - routing and vols
-    - NGINX GraphQLi route
     - HTML uploads
         - docs_raw or something handle text and file format to place in uploads
 """
@@ -17,7 +14,7 @@ from schema import schema
 
 
 app = Flask(__name__)
-client = connect('fern-flask-testing', alias='default')
+client = connect(host='mongodb://mongo:27017/fern-flask-docker', alias='default')
 
 
 @app.route('/doc_file', methods=["GET", "POST", "PUT"])

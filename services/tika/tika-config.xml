@@ -5,7 +5,6 @@
     <params>
       <port>9998</port>
       <host>0.0.0.0</host>
-<!--      <cors>localhost</cors>-->
       <endpoints>
         <endpoint>tika</endpoint>
       </endpoints>

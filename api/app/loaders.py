@@ -27,13 +27,20 @@ class DocUpload(object):
             file = self.request.files['upload_file']
             self.file_name = file.filename
             print(f'Saving {file.filename} to uploads folder ...')
+
             # change chris to username based folders soon
-            # TODO: Check if file already uploaded ...
             self.file_location = f'{self.UPLOAD_FOLDER}'
             self.full_path = f"{self.UPLOAD_FOLDER}/{self.file_name}"
+
+            # messy change this
+            if os.path.isfile(self.full_path):
+                print(f'File {self.full_path} already exists ...')
+                return True
+
             file.save(self.full_path)
             print(f'{file.filename} saved at {self.file_location} ...')
             return True
+
         return False
 
     def _send_to_tika(self) -> bool:
