@@ -6,7 +6,7 @@ TODO:
 """
 
 from models import DocResponse
-from loaders import DocUpload
+from loaders import DocUpload, DocRawUpload
 from mongoengine import connect
 from flask import Flask, request, jsonify
 from flask_graphql import GraphQLView
@@ -29,6 +29,27 @@ def doc_endpoint():
         if 'upload_file' in request.files:
             print('Received doc file ...')
             loader = DocUpload(request)
+            if loader.process():
+                message = 'File successfully loaded into Fern'
+            else:
+                message = 'File unsuccessfully loaded into Fern'
+            return jsonify(
+                DocResponse(
+                    message=message
+                ).dict()
+            )
+
+
+@app.route('/doc_raw', methods=['PUT', 'POST'])
+def doc_raw_endpoint():
+    """
+    Raw text into specified format on upload server
+    """
+
+    if request.method == "PUT":
+        data = request.json()
+        if 'doc_type' and 'raw_data' in data:
+            loader = DocRawUpload(data)
             if loader.process():
                 message = 'File successfully loaded into Fern'
             else:
