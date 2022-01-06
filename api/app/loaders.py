@@ -3,9 +3,11 @@ File loader object
 Server-side object that handles upload requests
 
 """
-from flask import Request
+from flask import Request, current_app
 from load_document import doc_from_path
 from typing import Optional
+import requests
+import re
 import os
 
 UPLOAD_FOLDER = '/app/uploads'
@@ -64,9 +66,10 @@ class DocUpload(object):
         return False
 
 
-class DocRawUpload(object):
+class DocURLUpload(object):
     """
-    Upload raw dta to uploads server
+    Upload URL to download
+    and place in uploads folder
     """
 
     _allowed_extensions = [
@@ -77,13 +80,26 @@ class DocRawUpload(object):
         self.data = data
         self.file_location = ''
         self.file_name = ''
+        self.page_data = ''
         self.full_path = ''
+
         if 'file_type' in self.data:
             self.file_type = self.data['file_type']
-        if 'raw_data' in self.data:
-            self.raw_data = self.data['raw_data']
         if 'file_name' in self.data:
-            self.file_name = self.data['name']
+            self.file_name = self.data['file_name']
+        if 'page_data' in self.data:
+            self.page_data = self.data['page_data']
+
+    @staticmethod
+    def get_response_text(url) -> Optional[str]:
+        """
+        If successful, get response raw text
+        :param url: file_name to get
+        :return: str
+        """
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text
 
     def _construct_file(self) -> Optional[bool]:
         """
@@ -91,14 +107,30 @@ class DocRawUpload(object):
 
         :return:
         """
-        if self.file_type and self.raw_data:
+        if self.file_type:
             if self.file_type in self._allowed_extensions:
                 print('Writing file to uploads...')
-                self.full_path = f'{UPLOAD_FOLDER}/{self.file_name}{self.file_type}'
+                if not str(self.file_name).endswith('.html'):
+                    self.full_path = f'{UPLOAD_FOLDER}/{self._clean_path(self.file_name+self.file_type)}'
+                else:
+                    self.full_path = f'{UPLOAD_FOLDER}/{self.file_name}'
                 file_ = open(self.full_path, 'w')
-                file_.write(self.raw_data)
-                file_.close()
-                return True
+                # response_text = self.get_response_text(self.file_name)
+                if self.page_data:
+                    file_.write(self.page_data)
+                    file_.close()
+                    return True
+        return False
+
+    @staticmethod
+    def _clean_path(path: str) -> str:
+        """
+        Clean html paths and replace special chars with '_'
+
+        :param path:
+        :return: str
+        """
+        return re.sub(pattern=r'[/:]', string=path, repl='_')
 
     def _send_to_tika(self) -> bool:
         if self._construct_file():
@@ -116,4 +148,5 @@ class DocRawUpload(object):
         """
         if self._send_to_tika():
             os.remove(self.full_path)
+            current_app.logger.info(f'Document {self.full_path} successfully added')
             return True
