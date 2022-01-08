@@ -1,6 +1,7 @@
 """
 Document parsers
 """
+from flask import current_app
 from tika import tika_parse_body
 from typing import Optional
 from math import ceil
@@ -30,7 +31,11 @@ class DocPipe:
     ) -> None:
         if disable_tags is None:
             disable_tags = [
-                "tok2vec", "tagger", "parser", "attribute_ruler", "lemmatizer"
+                "tok2vec",
+                "tagger",
+                "parser",
+                "attribute_ruler",
+                "lemmatizer"
             ]
         self.text = text
         self.default_length = default_length
@@ -69,13 +74,21 @@ class DocPipe:
         Collect entity stream from spacy pipeline
         :return: list
         """
+        current_app.logger.info('Chunking texts ...')
         texts = self.chunk_texts()
-        for text in self.nlp.pipe(texts, disable=self.disable_tags):
+        current_app.logger.info(f'Doc Length: {len(texts)}')
+        current_app.logger.info('Iterating over entities ...')
+        for idx, text in enumerate(self.nlp.pipe(
+                texts,
+                disable=self.disable_tags
+        )):
+            current_app.logger.info(f'Analyzing doc {idx} ...')
             for ent in text.doc.ents:
                 if ent.label_ not in self.entity_dict.keys():
                     self.entity_dict[ent.label_] = set(ent.text)
                 else:
                     self.entity_dict[ent.label_].add(ent.text)
+        current_app.logger.info('Creating entity dict ...')
         for _ in self.entity_dict.keys():
             self.entity_dict[_] = list(self.entity_dict[_])
 

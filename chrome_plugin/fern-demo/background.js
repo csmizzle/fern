@@ -6,12 +6,10 @@ chrome.runtime.onInstalled.addListener(() => {
 })
 
 function getOuterHTML() {
-    console.log('Getting outer HTML ...')
-    const data = document.body.innerText;
-    console.log(data);
-    return data
+    return document.body.innerText;
 }
 
+// listen for event triggered by chrome plugin
 chrome.runtime.onMessage.addListener(
     (request, sender, sendResponse) => {
         if (request.name === "put_doc") {
@@ -20,20 +18,18 @@ chrome.runtime.onMessage.addListener(
                 windowId: chrome.windows.WINDOW_ID_CURRENT,
                 lastFocusedWindow: true
             }, tabs => {
+                // get url and tab id to send docs to Fern server-side
                 let url = tabs[0].url;
                 let id_ = tabs[0].id;
-                console.log('ID', id_)
                 data = chrome.scripting.executeScript({
                     target: { tabId: id_ , allFrames: true },
                     func: getOuterHTML
                 }).then(function(result) {
-                    console.log(url);
                     const payload = JSON.stringify({
                         file_type: ".html",
                         file_name: url,
                         page_data: result[0].result
                     })
-                    console.log(payload);
                     fetch('http://localhost:1337/doc_raw', {
                         method: "PUT",
                         body: JSON.stringify(payload),

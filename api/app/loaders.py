@@ -29,7 +29,7 @@ class DocUpload(object):
         if 'upload_file' in self.request.files:
             file = self.request.files['upload_file']
             self.file_name = file.filename
-            print(f'Saving {file.filename} to uploads folder ...')
+            current_app.logger.info(f'Saving {file.filename} to uploads folder ...')
 
             # change chris to username based folders soon
             self.file_location = f'{UPLOAD_FOLDER}'
@@ -37,11 +37,11 @@ class DocUpload(object):
 
             # messy change this
             if os.path.isfile(self.full_path):
-                print(f'File {self.full_path} already exists ...')
+                current_app.logger.info(f'File {self.full_path} already exists ...')
                 return True
 
             file.save(self.full_path)
-            print(f'{file.filename} saved at {self.file_location} ...')
+            current_app.logger.info(f'{file.filename} saved at {self.file_location} ...')
             return True
 
         return False
@@ -49,10 +49,11 @@ class DocUpload(object):
     def _send_to_tika(self) -> bool:
         if self._write_to_uploads():
             if self.file_location:
+                current_app.logger.info(f'Reading {self.full_path} ...')
                 doc_from_path(file_path=self.full_path)
                 return True
         else:
-            print('"static_file" not in initial request ...')
+            current_app.logger.info('"static_file" not in initial request ...')
         return False
 
     def process(self) -> bool:
@@ -109,7 +110,7 @@ class DocURLUpload(object):
         """
         if self.file_type:
             if self.file_type in self._allowed_extensions:
-                print('Writing file to uploads...')
+                current_app.logger.info(f'Writing {self.file_name} to uploads...')
                 if not str(self.file_name).endswith('.html'):
                     self.full_path = f'{UPLOAD_FOLDER}/{self._clean_path(self.file_name+self.file_type)}'
                 else:
@@ -138,7 +139,7 @@ class DocURLUpload(object):
                 doc_from_path(file_path=self.full_path)
                 return True
         else:
-            print('file not in data ...')
+            current_app.logger.info('file not in data ...')
         return False
 
     def process(self) -> Optional[bool]:
