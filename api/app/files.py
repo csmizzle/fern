@@ -82,7 +82,6 @@ class DocPipe:
                 texts,
                 disable=self.disable_tags
         )):
-            current_app.logger.info(f'Analyzing doc {idx} ...')
             for ent in text.doc.ents:
                 if ent.label_ not in self.entity_dict.keys():
                     self.entity_dict[ent.label_] = set(ent.text)
@@ -99,18 +98,6 @@ class TikaPipe(DocPipe):
         super().__init__(text=self.text)
 
 
-# HTML Handlers
-class HTMLPipe(DocPipe):
-    """
-    FERN HTML upload
-
-    """
-
-    def __init__(self, html: str) -> None:
-        self.text = BeautifulSoup(html).get_text().strip()
-        super().__init__(text=self.text)
-
-
 # functions for classes above
 def create_fern_doc(path: str) -> Optional[TikaPipe]:
     """
@@ -122,13 +109,3 @@ def create_fern_doc(path: str) -> Optional[TikaPipe]:
     if path:
         return TikaPipe(path)
 
-
-def create_fern_html(html: str) -> Optional[HTMLPipe]:
-    """
-    Factory for HTML docs
-
-    :param html:
-    :return: Optional[HTML]
-    """
-    if len(html) > 0:
-        return HTMLPipe(html)
