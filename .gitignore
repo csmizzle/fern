@@ -4,5 +4,10 @@ scratch
 *cache*
 datasets
 notebooks
-volumes
+# anythign heavy from volumes will re ignored
+volumes/mongo
+
+# data files
+*.csv
+*.pdf
 *.log

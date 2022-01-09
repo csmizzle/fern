@@ -1,0 +1,15 @@
+mongo-url = "mongodb://mongodb2:27017"
+elasticsearch-urls = ["http://elastic:9200"]
+
+elasticsearch-max-conns = 10
+replay = false
+resume = true
+verbose = true
+enable-oplog = true
+index-as-update = true
+exit-after-direct-reads = false
+direct-read-namespaces = ['db.fern-flask-docker']
+
+[[mapping]]
+namespace = "db.fern-flask-docker"
+index = "fern-docs"

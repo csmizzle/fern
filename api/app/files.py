@@ -25,7 +25,7 @@ class DocPipe:
     def __init__(
             self,
             text: str,
-            default_length: int = 10000,
+            default_length: int = 8000,
             disable_tags: list = None,
             pipeline: list = None,
     ) -> None:
