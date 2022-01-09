@@ -1,6 +1,9 @@
 version: '3.8'
+
+
 services:
   nginx:
+    container_name: nginx
     image: nginx:1.19-alpine
     ports:
       - "1337:80"
@@ -10,15 +13,17 @@ services:
     depends_on:
       - flask
   flask:
+    container_name: flask
     build: ./api
     expose:
       - "5000"
     volumes:
       - "./volumes/uploads:/app/uploads"
-      - "./volumes/api.log:/app/api.log"
+      - "./volumes/api/api.log:/app/api.log"
     depends_on:
       - tika
   tika:
+    container_name: tika
     image: apache/tika:2.2.0
     expose:
       - "9998"
@@ -26,11 +31,50 @@ services:
       - "./services/tika/tika-config.xml:/tika-config.xml"
     command: "-c /tika-config.xml"
     restart: always
-  mongo:
+  # mongo client to create replicated sets
+  mongoinitiator:
+    container_name: mongoinitiator
+    image: mongo:latest
+    volumes:
+      - "./volumes/mongo/rs-init.sh:/rs-init.sh"
+    depends_on:
+      - flask
+    entrypoint: "/rs-init.sh"
+  # mongo containers
+  mongodb1:
+    container_name: mongo
     image: mongo:latest
     expose:
       - "27017"
     volumes:
       - "./volumes/mongo/:/data/db"
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+  mongodb2:
+    container_name: mongodb2
+    image: mongo:latest
+    expose:
+      - "27017"
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+  # mongo - elastic sync
+  monstache:
+    container_name: monstache
+    image: rwynn/monstache:latest
+    working_dir: /monstache
+    volumes:
+      - "./volumes/monstache/monstache.toml:/monstache.toml"
+    command: -f /monstache.toml
+    expose:
+      - "8080"
     depends_on:
-      - flask
+      - mongodb2
+      - elastic
+    restart: on-failure
+  elastic:
+    container_name: elastic
+    image: elasticsearch:7.16.2
+    environment:
+      - discovery.type=single-node
+    expose:
+      - "9200"
+    depends_on:
+      - mongodb2
