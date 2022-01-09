@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # reverse proxy to limit API exposure
+  # reverse proxy to limit API exposure and handle CORS
   nginx:
     container_name: nginx
     image: nginx:1.19-alpine
